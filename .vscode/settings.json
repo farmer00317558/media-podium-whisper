@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "*.md": "markdown",
+        "*.tsx": "typescriptreact",
+        "iosfwd": "cpp",
+        "vector": "cpp",
+        "__verbose_abort": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "string": "cpp"
+    },
+    "cSpell.words": [
+        "dylib"
+    ]
+}
