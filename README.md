@@ -20,6 +20,7 @@ make
 3. Run `bin/hello_dart_ffi.dart`
 
 ```bash
+dart pub get
 dart bin/hello_dart_ffi.dart
 ```
 
