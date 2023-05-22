@@ -12,9 +12,7 @@ typedef RequestTranscribe = Pointer<Utf8> Function(
 );
 
 var libPath = path.join(Directory.current.path, 'build', 'libwhisper.dylib');
-// var libPath = path.join(Directory.current.path, 'libwhisper.dylib');
 var wavFilePath = path.join(Directory.current.path, 'demo.wav');
-// var modelFilePath = path.join(Directory.current.path, 'ggml-medium-q5_0.bin');
 var modelFilePath = path.join(Directory.current.path, 'ggml-tiny-q5_0.bin');
 
 void main(List<String> arguments) {
@@ -43,7 +41,7 @@ class Task {
           "is_verbose": true,
           "is_translate": false,
           "prompt": "",
-          "language": "auto",
+          "language": "zh",
           "is_special_tokens": false,
           "is_no_timestamps": false,
           "n_processors": 1,

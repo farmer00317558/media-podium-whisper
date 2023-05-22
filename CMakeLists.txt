@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(whisper_library VERSION 0.0.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
+# set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
@@ -23,10 +23,25 @@ set_target_properties(whisper PROPERTIES
 )
 endif (WIN32)
 
-target_compile_definitions(whisper PUBLIC DART_SHARED_LIB)
-# target_compile_definitions(whisper PUBLIC DART_SHARED_LIB ${WHISPER_EXTRA_FLAGS})
-# target_compile_definitions(whisper_lib PUBLIC ${WHISPER_EXTRA_FLAGS})
-# target_compile_definitions(ggml PUBLIC ${WHISPER_EXTRA_FLAGS})
 
-# target_link_libraries(whisper PRIVATE whisper_lib ggml ${WHISPER_EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(whisper PRIVATE whisper_lib ggml ${CMAKE_THREAD_LIBS_INIT})
+# on APPLE
+if (APPLE)
+    # include Accelerate framework
+    if (NOT WHISPER_NO_ACCELERATE)
+        find_library(ACCELERATE_FRAMEWORK Accelerate)
+
+        if (ACCELERATE_FRAMEWORK)
+            message(STATUS "Accelerate framework found")
+
+            set(WHISPER_EXTRA_LIBS  ${WHISPER_EXTRA_LIBS}  ${ACCELERATE_FRAMEWORK})
+            set(WHISPER_EXTRA_FLAGS ${WHISPER_EXTRA_FLAGS} -DGGML_USE_ACCELERATE)
+        else()
+            message(WARNING "Accelerate framework not found")
+        endif()
+    endif()
+endif()
+
+target_compile_definitions(whisper PUBLIC DART_SHARED_LIB)
+target_compile_definitions(ggml PUBLIC ${WHISPER_EXTRA_FLAGS})
+
+target_link_libraries(whisper PRIVATE whisper_lib ggml ${WHISPER_EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})

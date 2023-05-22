@@ -1,18 +1,14 @@
 ## Reproduction steps
 
-1. Download the model file in the root dir of current repo.
-
-```
-https://huggingface.co/farmer00317558/quantized_whisper_model/resolve/main/ggml-medium-q5_0.bin
-```
-
-2. Pull git submodule
+1. Pull git submodule
 
 ```bash
 git submodule update --init --recursive
+cd whisper.cpp
+git checkout v1.4.1
 ```
 
-3. Build dylib
+2. Build dylib
 
 ```bash
 mkdir build
@@ -21,7 +17,7 @@ cmake ..
 make
 ```
 
-4. Run `bin/hello_dart_ffi.dart`
+3. Run `bin/hello_dart_ffi.dart`
 
 ```bash
 dart bin/hello_dart_ffi.dart
@@ -32,12 +28,27 @@ Output:
 ```
 ....
 
-task complete in: 143s
+task complete in: 67s
 ```
 
-5. Build C++ executable binary
+4. Build C++ executable binary
 
 ```bash
 cd whisper.cpp
+make
+```
+
+5. Run executable binary in dir `whisper.cpp`:
+
+```bash
+./main -m ../ggml-tiny-q5_0.bin -l zh -pp -bo 5 ../demo.wav
+```
+
+Output:
 
 ```
+....
+
+whisper_print_timings:    total time =  4316.28 ms
+```
+

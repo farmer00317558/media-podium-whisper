@@ -18,83 +18,12 @@ using json = nlohmann::json;
 
 typedef void (*progress_callback)(int progress);
 
-void print(std::string value)
-{
-    std::cout << value << std::endl;
-}
-
 char *jsonToChar(json jsonData)
 {
     std::string result = jsonData.dump();
     char *ch = new char[result.size() + 1];
     strcpy(ch, result.c_str());
     return ch;
-}
-
-std::string charToString(char *value)
-{
-    std::string result(value);
-    return result;
-}
-
-char *stringToChar(std::string value)
-{
-    char *ch = new char[value.size() + 1];
-    strcpy(ch, value.c_str());
-    return ch;
-}
-
-// //  500 -> 00:05.000
-// // 6000 -> 01:00.000
-// std::string to_timestamp(int64_t t)
-// {
-//     int64_t sec = t / 100;
-//     int64_t msec = t - sec * 100;
-//     int64_t min = sec / 60;
-//     sec = sec - min * 60;
-
-//     char buf[32];
-//     snprintf(buf, sizeof(buf), "%02d:%02d.%03d", (int)min, (int)sec, (int)msec);
-
-//     return std::string(buf);
-// }
-
-// Terminal color map. 10 colors grouped in ranges [0.0, 0.1, ..., 0.9]
-// Lowest is red, middle is yellow, highest is green.
-const std::vector<std::string> k_colors = {
-    "\033[38;5;196m",
-    "\033[38;5;202m",
-    "\033[38;5;208m",
-    "\033[38;5;214m",
-    "\033[38;5;220m",
-    "\033[38;5;226m",
-    "\033[38;5;190m",
-    "\033[38;5;154m",
-    "\033[38;5;118m",
-    "\033[38;5;82m",
-};
-
-//  500 -> 00:05.000
-// 6000 -> 01:00.000
-std::string to_timestamp(int64_t t, bool comma = false)
-{
-    int64_t msec = t * 10;
-    int64_t hr = msec / (1000 * 60 * 60);
-    msec = msec - hr * (1000 * 60 * 60);
-    int64_t min = msec / (1000 * 60);
-    msec = msec - min * (1000 * 60);
-    int64_t sec = msec / 1000;
-    msec = msec - sec * 1000;
-
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%02d:%02d:%02d%s%03d", (int)hr, (int)min, (int)sec, comma ? "," : ".", (int)msec);
-
-    return std::string(buf);
-}
-
-int timestamp_to_sample(int64_t t, int n_samples)
-{
-    return std::max(0, std::min((int)n_samples - 1, (int)((t * WHISPER_SAMPLE_RATE) / 100)));
 }
 
 // command-line parameters
@@ -127,19 +56,12 @@ struct whisper_params
     bool output_csv = false;
     bool print_special = false;
     bool print_colors = false;
-    bool print_progress = true;
+    bool print_progress = false;
     bool no_timestamps = false;
     std::string language = "id";
     std::string prompt;
-    std::string model = "models/ggml-model-whisper-small.bin";
-    std::string audio = "samples/jfk.wav";
-};
-
-struct whisper_print_user_data
-{
-    const whisper_params *params;
-
-    const std::vector<std::vector<float>> *pcmf32s;
+    std::string model = "";
+    std::string audio = "";
 };
 
 bool is_aborted = false;
@@ -330,7 +252,6 @@ json transcribe(json jsonBody, progress_callback progress_cb)
 
         wparams.encoder_begin_callback = [](struct whisper_context * ctx, struct whisper_state * state, void * user_data) {
             bool* abort = (bool*)user_data;
-            printf("encoder begin, is_aborted: %d...\n", *abort);
             if (*abort) {
                 *abort = false;
                 return false;
