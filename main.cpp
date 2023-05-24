@@ -19,8 +19,7 @@ using json = nlohmann::json;
 
 typedef void (*progress_callback)(int progress);
 
-char *jsonToChar(json jsonData)
-{
+char *jsonToChar(json jsonData) {
     std::string result = jsonData.dump(-1, ' ', false, json::error_handler_t::ignore);
     char *ch = new char[result.size() + 1];
     strcpy(ch, result.c_str());
@@ -234,21 +233,19 @@ json transcribe(json jsonBody, progress_callback progress_cb) {
 
         const int n_segments = whisper_full_n_segments(ctx);
         for (int i = 0; i < n_segments; ++i) {
-            json segment;
             const char *text = whisper_full_get_segment_text(ctx, i);
-
             std::string str(text);
-            segment["text"] = str;
 
-            if (params.no_timestamps) {
-                // printf("%s", text);
-                // fflush(stdout);
-            } else {
-                const int64_t t0 = whisper_full_get_segment_t0(ctx, i);
-                const int64_t t1 = whisper_full_get_segment_t1(ctx, i);
-                segment["end"] = t1;
-                segment["start"] = t0;
-            }
+            printf("%s\n", text);
+            fflush(stdout);
+
+            const int64_t t0 = whisper_full_get_segment_t0(ctx, i);
+            const int64_t t1 = whisper_full_get_segment_t1(ctx, i);
+
+            json segment;
+            segment["text"] = str;
+            segment["end"] = t1;
+            segment["start"] = t0;
             jsonResult["segments"].push_back(segment);
         }
     }
@@ -285,12 +282,14 @@ extern "C" {
 int main(int argc, char ** argv) {
     json jsonBody = json::parse(R"({
         "@type": "getTextFromWavFile",
-        "model": "/Users/lei/Projects/hello-dart-ffi/ggml-medium-q5_0.bin",
+        "model": "/Users/lei/Projects/audio-podium/macos/Runner/ggml-large.bin",
         "audio": "/Users/lei/Projects/hello-dart-ffi/demo.wav",
         "threads": 4,
+        "beam_size": 2,
+        "best_of": 2,
         "is_verbose": true,
         "is_translate": false,
-        "prompt": "",
+        "prompt": "。",
         "language": "zh",
         "is_special_tokens": false,
         "is_no_timestamps": false,
