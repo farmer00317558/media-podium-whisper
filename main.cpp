@@ -58,6 +58,7 @@ struct whisper_params {
     bool print_special  = false;
     bool print_colors   = false;
     bool print_progress = false;
+    bool print_segments = false;
     bool no_timestamps  = false;
 
     std::string language = "en";
@@ -74,19 +75,21 @@ bool is_aborted = false;
 json transcribe(json jsonBody, progress_callback progress_cb) {
     whisper_params params;
 
-    params.n_threads = jsonBody["threads"];
-    params.translate = jsonBody["is_translate"];
-    params.language = jsonBody["language"];
-    params.prompt = jsonBody["prompt"];
-    params.no_timestamps = jsonBody["is_no_timestamps"];
-    params.model = jsonBody["model"];
-    params.n_processors = jsonBody["n_processors"];
-    params.split_on_word = jsonBody["split_on_word"];
-    params.no_fallback = jsonBody["no_fallback"];
-    params.diarize = jsonBody["diarize"];
-    params.speed_up = jsonBody["speed_up"];
-    params.beam_size = jsonBody["beam_size"];
-    params.best_of = jsonBody["best_of"];
+    params.n_threads       = jsonBody["threads"];
+    params.offset_t_ms     = jsonBody["offset_t_ms"];
+    params.translate       = jsonBody["is_translate"];
+    params.language        = jsonBody["language"];
+    params.prompt          = jsonBody["prompt"];
+    params.no_timestamps   = jsonBody["is_no_timestamps"];
+    params.model           = jsonBody["model"];
+    params.n_processors    = jsonBody["n_processors"];
+    params.split_on_word   = jsonBody["split_on_word"];
+    params.no_fallback     = jsonBody["no_fallback"];
+    params.diarize         = jsonBody["diarize"];
+    params.speed_up        = jsonBody["speed_up"];
+    params.beam_size       = jsonBody["beam_size"];
+    params.best_of         = jsonBody["best_of"];
+    params.print_segments  = jsonBody["print_segments"];
     
     json jsonResult;
     jsonResult["@type"] = "transcribe";
@@ -103,10 +106,11 @@ json transcribe(json jsonBody, progress_callback progress_cb) {
 
     std::vector<whisper_token> prompt_tokens;
 
-    if (!params.prompt.empty()) {
-        fprintf(stderr, "\n");
-        fprintf(stderr, "initial prompt: '%s'\n", params.prompt.c_str());
-    }
+    fprintf(stderr, "\n");
+    fprintf(stderr, "initial prompt: '%s'\n", params.prompt.c_str());
+    fprintf(stderr, "best_of: '%d'\n", params.best_of);
+    fprintf(stderr, "beam_size: '%d'\n", params.beam_size);
+    fprintf(stderr, "offset_t_ms: '%d'\n", params.offset_t_ms);
 
     std::string text_result = "";
     std::string fname_inp = jsonBody["audio"];
@@ -162,17 +166,15 @@ json transcribe(json jsonBody, progress_callback progress_cb) {
 
     // print some info about the processing
     {
-        // printf("\n");
-        if (!whisper_is_multilingual(ctx))
-        {
-            if (params.language != "en" || params.translate)
-            {
+        if (!whisper_is_multilingual(ctx)) {
+            if (params.language != "en" || params.translate) {
                 params.language = "en";
                 params.translate = false;
                 printf("%s: WARNING: model is not multilingual, ignoring language and translation options\n", __func__);
             }
         }
     }
+
     // run the inference
     {
         whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -236,8 +238,10 @@ json transcribe(json jsonBody, progress_callback progress_cb) {
             const char *text = whisper_full_get_segment_text(ctx, i);
             std::string str(text);
 
-            printf("%s\n", text);
-            fflush(stdout);
+            if (params.print_segments) {
+                printf("%s\n", text);
+                fflush(stdout);
+            }
 
             const int64_t t0 = whisper_full_get_segment_t0(ctx, i);
             const int64_t t1 = whisper_full_get_segment_t1(ctx, i);
@@ -283,24 +287,25 @@ int main(int argc, char ** argv) {
     json jsonBody = json::parse(R"({
         "@type": "getTextFromWavFile",
         "model": "/Users/lei/Projects/audio-podium/macos/Runner/ggml-large.bin",
-        "audio": "/Users/lei/Projects/hello-dart-ffi/demo.wav",
+        "audio": "/Users/lei/Projects/hello-dart-ffi/space.wav",
         "threads": 4,
         "beam_size": 2,
         "best_of": 2,
+        "offset_t_ms": 600000,
         "is_verbose": true,
         "is_translate": false,
-        "prompt": "。",
+        "prompt": "添加标点符号。",
         "language": "zh",
         "is_special_tokens": false,
         "is_no_timestamps": false,
         "n_processors": 1,
         "split_on_word": false,
         "no_fallback": false,
+        "print_segments": true,
         "diarize": false,
         "speed_up": false
     })");
-
-    transcribe(jsonBody, nullptr);
-
+    json ret = transcribe(jsonBody, nullptr);
+    printf("%s", jsonToChar(ret));
     return 0;
 }
