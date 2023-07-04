@@ -24,14 +24,6 @@ dart pub get
 dart bin/hello_dart_ffi.dart
 ```
 
-Output:
-
-```
-....
-
-task complete in: 67s
-```
-
 4. Build C++ executable binary
 
 ```bash
@@ -44,12 +36,3 @@ make
 ```bash
 ./main -m ../ggml-tiny-q5_0.bin -l zh -pp -bo 5 ../demo.wav
 ```
-
-Output:
-
-```
-....
-
-whisper_print_timings:    total time =  4316.28 ms
-```
-
