@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io' show Platform, Directory;
+import 'dart:io' show Directory, Platform;
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:path/path.dart' as path;
@@ -11,10 +11,13 @@ typedef RequestTranscribe = Pointer<Utf8> Function(
   Pointer<NativeFunction<ProgressCallback>>,
 );
 
-// var libPath = path.join(Directory.current.path, 'build', 'libwhisper.dylib');
-var libPath = path.join(Directory.current.path, 'build', 'libwhisper.dylib');
+var homePath = Platform.environment['HOME'] ?? "";
+var libName = "libmedia_podium_whisper.dylib";
+
+var libPath = path.join(Directory.current.path, 'build', libName);
 var wavFilePath = path.join(Directory.current.path, 'demo.wav');
-var modelFilePath = path.join(Directory.current.path, 'ggml-medium-q5_0.bin');
+var modelFilePath =
+    path.join(homePath, 'Models/whisper/ggml-large-v3-q5_0.bin');
 
 void main(List<String> arguments) {
   Task.run();
@@ -34,26 +37,12 @@ class Task {
 
     final params = jsonEncode(
       {
-        "@type": "getTextFromWavFile",
+        "@type": "transcribe",
         "model": modelFilePath,
-        "audio": wavFilePath,
-        "threads": 4,
-        "is_verbose": true,
-        "is_translate": false,
-        "prompt": "",
-        "language": "zh",
-        "is_special_tokens": false,
-        "is_no_timestamps": false,
-        // "best_of": 5, // bs = -1: 61s
-        // "best_of": 2, // bs = -1: 60s, bs = 2: 98s
-        // "best_of": 2,
-        "beam_size": -1,
-        "beam_size": 2,
-        "n_processors": 1,
-        "split_on_word": false,
-        "no_fallback": false,
-        "diarize": false,
-        "speed_up": false,
+        "file": wavFilePath,
+        "language": "auto",
+        "diarize": true,
+        "use_gpu": true,
       },
     );
 
