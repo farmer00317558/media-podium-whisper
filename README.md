@@ -5,7 +5,7 @@
 ```bash
 git submodule update --init --recursive
 cd whisper.cpp
-git checkout v1.4.1
+git checkout v1.5.4
 ```
 
 2. Build dylib

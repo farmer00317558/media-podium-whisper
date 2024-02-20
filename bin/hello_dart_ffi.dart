@@ -15,9 +15,11 @@ var homePath = Platform.environment['HOME'] ?? "";
 var libName = "libmedia_podium_whisper.dylib";
 
 var libPath = path.join(Directory.current.path, 'build', libName);
-var wavFilePath = path.join(Directory.current.path, 'demo.wav');
+// var wavFilePath = path.join(Directory.current.path, 'demo.wav');
 var modelFilePath =
     path.join(homePath, 'Models/whisper/ggml-large-v3-q5_0.bin');
+var wavFilePath =
+    "/Users/lei/Projects/media-podium-whisper/whisper.cpp/samples/jfk.wav";
 
 void main(List<String> arguments) {
   Task.run();
