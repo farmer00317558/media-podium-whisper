@@ -16,10 +16,12 @@ var libName = "libmedia_podium_whisper.dylib";
 
 var libPath = path.join(Directory.current.path, 'build', libName);
 // var wavFilePath = path.join(Directory.current.path, 'demo.wav');
+// var modelFilePath =
+//     path.join(homePath, 'Models/whisper/ggml-large-v3-q5_0.bin');
 var modelFilePath =
-    path.join(homePath, 'Models/whisper/ggml-large-v3-q5_0.bin');
+    "/Users/lei/Projects/media-podium-whisper/whisper.cpp/models/ggml-large-v1.bin";
 var wavFilePath =
-    "/Users/lei/Projects/media-podium-whisper/whisper.cpp/samples/jfk.wav";
+    "/Users/lei/Projects/voice-assistant-demo-api/data/audio/stovol-107-10.wav";
 
 void main(List<String> arguments) {
   Task.run();
@@ -45,6 +47,7 @@ class Task {
         "language": "auto",
         "diarize": true,
         "use_gpu": true,
+        "prompt": "简体中文，English",
       },
     );
 

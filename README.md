@@ -5,12 +5,13 @@
 ```bash
 git submodule update --init --recursive
 cd whisper.cpp
-git checkout v1.5.4
+git checkout v1.7.5
 ```
 
 2. Build dylib
 
 ```bash
+rm -rf build
 mkdir build
 cd build
 cmake ..
